@@ -9,18 +9,6 @@ import time
 con = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = con.channel()
 
-CONSUMER_KEY = '9MgHe4rbqjnKi3Kn5YSAtl6Kv'
-
-CONSUMER_SECRET = 'kI9PzNX7MvMjYXFfGfsZLrvcKzIRW9ZosTc5rMUBmwEqgP1T9U'
-
-ACCESS_KEY = '1123125102898495488-ATNY3FO9pKAWqUdPU3escdwKW45M0y'
-
-ACCESS_SECRET = 'It281zL407ccZLhjRAi3twaOXuZze79s06nqhXqVo4fgv'
-
-twitter = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-twitter.set_access_token(ACCESS_KEY, ACCESS_SECRET)
-api = tweepy.api(tw)
-
 marvel = []
 dc = []
 contadores = []
@@ -39,10 +27,10 @@ heroes = ['#CapitanAmerica', '#IronMan', '#Thor', '#Hulk', '#BlackWidow', '#Spid
 inputs = {'Marvel': marvel(), 'dc': dc()}
 
 def contarTweets(consulta, array):
-	resultados = api.serch(consulta)
+	resultados = api.search(consulta)
 	cont = 0
 	for lista in resultados:
-		++cont
+		cont += 1
 	contadores[consulta] = cont
 
 
@@ -57,3 +45,8 @@ def llamadaDC():
 	for n in heroes:
 		if(i >= 12):
 			contarTweets(heroes[i])
+
+def callBack(ch, method, properties, body):
+	if(body == 'Marvel'):
+		print(" Recogiendo información sobre la popularidad de los heroes de Marvel")
+		

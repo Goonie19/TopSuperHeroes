@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 
-import zmq
+import pika
 import os
 import tweepy
 import pandas as pd
@@ -11,39 +11,46 @@ import pickle
 import time
 import paginas_drive.classy as gs
 
-proyecto_sd = gs.drive() # instacia para abstraer el drive, necesaria para comunicarse con drive
-
-hoja = proyecto_sd.nueva_hoja("Heroes") # creamos la hoja donde iremos actualizando las páginas
-proyecto_sd.nueva_pagina("Heroes","Marvel") #completar
-proyecto_sd.nueva_pagina("Heroes","dc") #completar
 
 def server():
-  context = zmq.Context(1)
-    sock = context.socket(zmq.REP) # REP
-    sock.bind('tcp://*:4545')
+    con = pika.BlockingConnection(pika.ConnectionParameters(host = 'localhost'))
+    canal = con.channel()
+    canal.queue_declare(queue = 'topCola', durable = True)
 
-    # Conection with worker
-    worker = context.socket(zmq.REQ) # PUSH
-    worker.bind("tcp://*:4546")
-  
-    # Start the server loop
+    CONSUMER_KEY = '9MgHe4rbqjnKi3Kn5YSAtl6Kv'
+
+    CONSUMER_SECRET = 'kI9PzNX7MvMjYXFfGfsZLrvcKzIRW9ZosTc5rMUBmwEqgP1T9U'
+
+    ACCESS_KEY = '1123125102898495488-ATNY3FO9pKAWqUdPU3escdwKW45M0y'
+
+    ACCESS_SECRET = 'It281zL407ccZLhjRAi3twaOXuZze79s06nqhXqVo4fgv'
+
+    twitter = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+    twitter.set_access_token(ACCESS_KEY, ACCESS_SECRET)
+    api = tweepy.api(tw)
+
+    proyecto_sd = gs.drive() # instacia para abstraer el drive, necesaria para comunicarse con drive
+
+    hoja = proyecto_sd.nueva_hoja("Heroes") # creamos la hoja donde iremos actualizando las páginas
+    proyecto_sd.nueva_pagina("Heroes","Marvel") #completar
+    proyecto_sd.nueva_pagina("Heroes","dc") #completar
+
+
     while True:
-        msg = sock.recv()
-        msg = msg.decode("utf-8")
-        print("Campo de estudio: " , msg)
-        if(msg == "marvel" or msg == "dc"):
-            worker.send_string(msg)
-            url = worker.recv() 
-            url = url.decode("utf-8")
-            print("url: " + url)
- 
-        else:
-            url = "Error."
+        md = api.direct_messages()
+        print(md[0].text)
+        for msg in md:
+            if(msg.text == 'Marvel' or msg.text =='DC'):
+                canal.basic_publish(exchange = '',
+                    routing_key = 'topCola',
+                    body = msg.text,
+                    properties = None)
+            else:
+                print "Debe introducir Marvel o DC."
 
-        # We share the path and we end comunications
-        sock.send_string(url, zmq.SNDMORE)
-        sock.send_string("fin")
+        time.sleep(1000)
             
+    con.close()
 
 if __name__ == '__main__':
     print("Servidor preparado")
