@@ -81,9 +81,6 @@ def topSuperHeroesMarvel():
 		max = 0
 		array.append(cadena)
 
-
-
-
 def llamadaMarvel():
 	i = 0
 	for n in heroes:
@@ -109,12 +106,27 @@ def callBack(ch, method, properties, body):
 		cadena = "Este es el top de popularidad de los heroes de Marvel.\nTop 1: " + top[0] + "\nTop 2: " + top[1] + 
 		"\nTop 3: " + top[2] + "\nTop 4: " + top[3] + "\nTop 5:" + top[4]
 		#añadir creacion de fichero y subida a drive
+		f = open ('heroes.txt','w')
+		f.write('hola mundo') #escribir la cadena
+		f.close()
+		file_metadata = {'name': 'heroes.txt'}
+		media = MediaFileUpload('files/heroes.txt',
+                mimetype='text/plain') #https://www.sitepoint.com/mime-types-complete-list/ para .txt
+		file = drive_service.files().create(body=file_metadata, media_body=media ,fields='id').execute()
 	else if(body == 'DC' or body == '@top_heroes DC'):
 		print(" Recogiendo información sobre la popularidad de los heroes de DC")
 		llamadaDC()
 		top = topSuperHeroes()
 		cadena = "Este es el top de popularidad de los heroes de Marvel.\nTop 1: " + top[0] + "\nTop 2: " + top[1] + 
 		"\nTop 3: " + top[2] + "\nTop 4: " + top[3] + "\nTop 5:" + top[4]
+		#creacion de fichero y subida drive
+		f = open ('heroes.txt','w')
+		f.write('hola mundo') #escribir la cadena
+		f.close()
+		file_metadata = {'name': 'heroes.txt'}
+		media = MediaFileUpload('files/heroes.txt',
+                mimetype='text/plain') #https://www.sitepoint.com/mime-types-complete-list/ para .txt
+		file = drive_service.files().create(body=file_metadata, media_body=media ,fields='id').execute()
 
 
 		
