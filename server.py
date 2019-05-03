@@ -1,15 +1,12 @@
-#!/usr/bin/python2
+#!/usr/bin/python
+#coding=utf-8
 
 import pika
 import os
 import tweepy
-import pandas as pd
-import numpy as np 
-import matplotlib.pyplot as plt
-import tkinter
-import pickle
 import time
-import paginas_drive.classy as gs
+import sys
+import requests
 
 
 def server():
@@ -27,20 +24,24 @@ def server():
 
     twitter = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     twitter.set_access_token(ACCESS_KEY, ACCESS_SECRET)
-    api = tweepy.api(tw)
+    api = tweepy.API(twitter)
 
-    proyecto_sd = gs.drive() # instacia para abstraer el drive, necesaria para comunicarse con drive
+   #proyecto_sd = gs.drive() # instacia para abstraer el drive, necesaria para comunicarse con drive
 
-    hoja = proyecto_sd.nueva_hoja("Heroes") # creamos la hoja donde iremos actualizando las páginas
-    proyecto_sd.nueva_pagina("Heroes","Marvel") #completar
-    proyecto_sd.nueva_pagina("Heroes","dc") #completar
-
+    #hoja = proyecto_sd.nueva_hoja("Heroes") # creamos la hoja donde iremos actualizando las páginas
+    #proyecto_sd.nueva_pagina("Heroes","Marvel") #completar
+    #proyecto_sd.nueva_pagina("Heroes","dc") #completar
 
     while True:
-        md = api.direct_messages()
-        print(md[0].text)
+        f = open("last_id.txt")
+        last_id = f.readline()
+        f.close()
+        md = api.mentions_timeline(last_id)
         for msg in md:
-            if(msg.text == 'Marvel' or msg.text =='DC'):
+            f = open("last_id.txt", "w")
+            f.write(str(msg.id))
+            f.close()
+            if(msg.text == '@top_heroes Marvel' or msg.text =='@top_heroes DC' or msg.text == 'Marvel' or msg.text == 'DC' ):
                 canal.basic_publish(exchange = '',
                     routing_key = 'topCola',
                     body = msg.text,

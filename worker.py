@@ -38,13 +38,15 @@ def llamadaMarvel():
 	i = 0
 	for n in heroes:
 		if(i < 12):
-			contarTweets(heroes[i])
+			contarTweets(heroes[i], contadores)
+		i += 1
 
 def llamadaDC():
 	i = 0
 	for n in heroes:
 		if(i >= 12):
 			contarTweets(heroes[i])
+		i += 1
 
 def callBack(ch, method, properties, body):
 	if(body == 'Marvel'):
