@@ -36,7 +36,7 @@ def server():
         f = open("last_id.txt")
         last_id = f.readline()
         f.close()
-        md = api.mentions_timeline(last_id)
+        md = api.mentions_timeline()
         for msg in md:
             f = open("last_id.txt", "w")
             f.write(str(msg.id))
