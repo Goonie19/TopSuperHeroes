@@ -22,13 +22,13 @@ dc = []
 contadoresmarvel = []
 contadoresdc = []
 
-CONSUMER_KEY = '9MgHe4rbqjnKi3Kn5YSAtl6Kv'
+CONSUMER_KEY = ''
 
-CONSUMER_SECRET = 'kI9PzNX7MvMjYXFfGfsZLrvcKzIRW9ZosTc5rMUBmwEqgP1T9U'
+CONSUMER_SECRET = ''
 
-ACCESS_KEY = '1123125102898495488-ATNY3FO9pKAWqUdPU3escdwKW45M0y'
+ACCESS_KEY = ''
 
-ACCESS_SECRET = 'It281zL407ccZLhjRAi3twaOXuZze79s06nqhXqVo4fgv'
+ACCESS_SECRET = ''
 
 twitter = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 twitter.set_access_token(ACCESS_KEY, ACCESS_SECRET)
@@ -41,7 +41,7 @@ file1 = drive.CreateFile({'title': 'heroesMarvel.txt'})
 file2 = drive.CreateFile({'title': 'heroesDC.txt'})
 
 def contarTweets(consulta):
-	resultados = api.search(consulta, count=100)
+	resultados = api.search(consulta, count=2000)
 	cont = len(resultados)
 	return cont
 
@@ -114,7 +114,6 @@ def callBack(ch, method, properties, body):
 		#añadir creacion de fichero y subida a drive
 		file1.SetContentString(cadena2)
 		file1.Upload() # Files.insert()
-		url = 'https://drive.google.com/open?id=' + file1['id']
 		api.update_status("@"+text[2]+" " + cadena, int(text[1]))
 		time.sleep(body.count(b'.'))
 	elif(text[0] == 'DC' or text[0] == '@top_heroes DC'):
@@ -122,10 +121,10 @@ def callBack(ch, method, properties, body):
 		llamadaDC()
 		top = topSuperHeroesDC()
 		cadena = "Este es el top de popularidad de los heroes de DC.\nTop 1: " + top[0] + "\nTop 2: " + top[1] + "\nTop 3: " + top[2] + "\nTop 4: " + top[3] + "\nTop 5: " + top[4]
+		cadena2 = "Este es el top de popularidad de los heroes de DC.\nTop 1: " + top[0]+ " Con " + str(contadoresdc[0]) + " tweets" + "\nTop 2: " + top[1] + " Con " + str(contadoresdc[1]) + " tweets" + "\nTop 3: " + top[2] + " Con " + str(contadoresdc[2]) + " tweets" + "\nTop 4: " + top[3] + " Con " + str(contadoresdc[3]) + " tweets" + "\nTop 5: " + top[4] + " Con " + str(contadoresdc[4]) + " tweets" 
 		#creacion de fichero y subida drive
-		file2.SetContentString(cadena)
+		file2.SetContentString(cadena2)
 		file2.Upload() # Files.insert()
-		url = 'https://drive.google.com/open?id=' + file2['id']
 		api.update_status("@"+text[2]+" " + cadena, int(text[1]))
 		time.sleep(body.count(b'.'))
 

@@ -14,36 +14,42 @@ def server():
     canal = con.channel()
     canal.queue_declare(queue = 'topCola', durable = True)
 
-    CONSUMER_KEY = '9MgHe4rbqjnKi3Kn5YSAtl6Kv'
+    CONSUMER_KEY = ''
 
-    CONSUMER_SECRET = 'kI9PzNX7MvMjYXFfGfsZLrvcKzIRW9ZosTc5rMUBmwEqgP1T9U'
+    CONSUMER_SECRET = ''
 
-    ACCESS_KEY = '1123125102898495488-ATNY3FO9pKAWqUdPU3escdwKW45M0y'
+    ACCESS_KEY = ''
 
-    ACCESS_SECRET = 'It281zL407ccZLhjRAi3twaOXuZze79s06nqhXqVo4fgv'
+    ACCESS_SECRET = ''
 
     twitter = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     twitter.set_access_token(ACCESS_KEY, ACCESS_SECRET)
     api = tweepy.API(twitter)
 
     while True:
-        f = open("last_id.txt")
-        last_id = f.readline()
-        f.close()
-        md = api.mentions_timeline()
-        for msg in md:
-            f = open("last_id.txt", "w")
-            f.write(str(msg.id))
+        try:
+            twitter = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+            twitter.set_access_token(ACCESS_KEY, ACCESS_SECRET)
+            api = tweepy.API(twitter)
+            f = open("last_id.txt")
+            readFromFile=f.read()
             f.close()
-            if(msg.text == '@top_heroes Marvel' or msg.text =='@top_heroes DC' or msg.text == 'Marvel' or msg.text == 'DC' ):
-                canal.basic_publish(exchange = '',
-                    routing_key = 'topCola',
-                    body = msg.text+"|"+str(msg.id)+"|"+msg.user.screen_name,
-                    properties = None)
-            else:
-                api.update_status("Debe contestar con Marvel o DC.", in_reply_to_status_id = last_id)
-
-        time.sleep(1000)
+            md = api.mentions_timeline()
+            for msg in md:
+                if(str(msg.id) not in readFromFile):
+                    f = open("last_id.txt", "a")
+                    f.write(str(msg.id)+"\n")
+                    f.close()
+                    if(msg.text == '@top_heroes Marvel' or msg.text =='@top_heroes DC' or msg.text == 'Marvel' or msg.text == 'DC' ):
+                        canal.basic_publish(exchange = '',
+                        routing_key = 'topCola',
+                        body = msg.text+"|"+str(msg.id)+"|"+msg.user.screen_name,
+                        properties = None)
+                    else:
+                        api.update_status("@"+msg.user.screen_name+" Debe contestar con Marvel o DC.", in_reply_to_status_id = msg.id)
+        except tweepy.error.TweepError:
+            pass
+        time.sleep(40)
             
     con.close()
 
