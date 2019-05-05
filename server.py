@@ -26,12 +26,6 @@ def server():
     twitter.set_access_token(ACCESS_KEY, ACCESS_SECRET)
     api = tweepy.API(twitter)
 
-   #proyecto_sd = gs.drive() # instacia para abstraer el drive, necesaria para comunicarse con drive
-
-    #hoja = proyecto_sd.nueva_hoja("Heroes") # creamos la hoja donde iremos actualizando las páginas
-    #proyecto_sd.nueva_pagina("Heroes","Marvel") #completar
-    #proyecto_sd.nueva_pagina("Heroes","dc") #completar
-
     while True:
         f = open("last_id.txt")
         last_id = f.readline()
@@ -44,10 +38,10 @@ def server():
             if(msg.text == '@top_heroes Marvel' or msg.text =='@top_heroes DC' or msg.text == 'Marvel' or msg.text == 'DC' ):
                 canal.basic_publish(exchange = '',
                     routing_key = 'topCola',
-                    body = msg.text,
+                    body = msg.text+"|"+str(msg.id)+"|"+msg.user.screen_name,
                     properties = None)
             else:
-                print "Debe introducir Marvel o DC."
+                api.update_status("Debe contestar con Marvel o DC.", in_reply_to_status_id = last_id)
 
         time.sleep(1000)
             

@@ -12,11 +12,15 @@ con = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = con.channel()
 
 gauth = GoogleAuth()
-gauth.LocalWebserverAuth()
+if not os.path.exists("client_secrets.json"):
+	gauth.LocalWebserverAuth()
 drive = GoogleDrive(gauth)
 
 marvel = []
 dc = []
+
+contadoresmarvel = []
+contadoresdc = []
 
 CONSUMER_KEY = '9MgHe4rbqjnKi3Kn5YSAtl6Kv'
 
@@ -37,7 +41,7 @@ file1 = drive.CreateFile({'title': 'heroesMarvel.txt'})
 file2 = drive.CreateFile({'title': 'heroesDC.txt'})
 
 def contarTweets(consulta):
-	resultados = api.search(consulta)
+	resultados = api.search(consulta, count=100)
 	cont = len(resultados)
 	return cont
 
@@ -56,6 +60,7 @@ def topSuperHeroesMarvel():
 				max = marvel[i]
 				cadena = heroesMarvel[i]
 			i += 1
+		contadoresmarvel.insert(c, max)
 		c += 1
 		max2 = max
 		max = 0
@@ -88,6 +93,7 @@ def topSuperHeroesDC():
 				max = dc[i]
 				cadena = heroesDC[i]
 			i += 1
+		contadoresdc.insert(c, max)
 		c += 1
 		max2 = max
 		max = 0
@@ -97,32 +103,31 @@ def topSuperHeroesDC():
 
 
 def callBack(ch, method, properties, body):
-	if(body == 'Marvel' or body == '@top_heroes Marvel'):
-		print(" Recogiendo información sobre la popularidad de los heroes de Marvel")
+	text = body.split("|")
+	if(text[0] == 'Marvel' or text[0] == '@top_heroes Marvel'):
+		print("Recogiendo información sobre la popularidad de los heroes de Marvel")
 		llamadaMarvel()
 		topmarvel = topSuperHeroesMarvel()
-		cadena = "Este es el top de popularidad de los heroes de Marvel.\nTop 1: " + topmarvel[0] + "\nTop 2: " + topmarvel[1] + "\nTop 3: " + topmarvel[2] + "\nTop 4: " + topmarvel[3] + "\nTop 5:" + topmarvel[4]
+		cadena = "Este es el top de popularidad de los heroes de Marvel.\nTop 1: " + topmarvel[0] + "\nTop 2: " + topmarvel[1] + "\nTop 3: " + topmarvel[2] + "\nTop 4: " + topmarvel[3] + "\nTop 5: " + topmarvel[4]
+		cadena2 = "Este es el top de popularidad de los heroes de Marvel.\nTop 1: " + topmarvel[0]+ " Con " + str(contadoresmarvel[0]) + " tweets" + "\nTop 2: " + topmarvel[1] + " Con " + str(contadoresmarvel[1]) + " tweets" + "\nTop 3: " + topmarvel[2] + " Con " + str(contadoresmarvel[2]) + " tweets" + "\nTop 4: " + topmarvel[3] + " Con " + str(contadoresmarvel[3]) + " tweets" + "\nTop 5: " + topmarvel[4] + " Con " + str(contadoresmarvel[4]) + " tweets" 
+
 		#añadir creacion de fichero y subida a drive
-		f = open ('heroes.txt','w')
-		f.write(cadena) #escribir la cadena
-		f.close()
-		file1.SetContentString(cadena)
+		file1.SetContentString(cadena2)
 		file1.Upload() # Files.insert()
-		url = 'https://drive.google.com/file/d/' + file1['id']
+		url = 'https://drive.google.com/open?id=' + file1['id']
+		api.update_status("@"+text[2]+" " + cadena, int(text[1]))
 		time.sleep(body.count(b'.'))
-	elif(body == 'DC' or body == '@top_heroes DC'):
-		print(" Recogiendo información sobre la popularidad de los heroes de DC")
+	elif(text[0] == 'DC' or text[0] == '@top_heroes DC'):
+		print("Recogiendo información sobre la popularidad de los heroes de DC")
 		llamadaDC()
 		top = topSuperHeroesDC()
 		cadena = "Este es el top de popularidad de los heroes de DC.\nTop 1: " + top[0] + "\nTop 2: " + top[1] + "\nTop 3: " + top[2] + "\nTop 4: " + top[3] + "\nTop 5: " + top[4]
 		#creacion de fichero y subida drive
-		f = open ('heroes.txt','w')
-		f.write(cadena) #escribir la cadena
-		f.close()
 		file2.SetContentString(cadena)
 		file2.Upload() # Files.insert()
+		url = 'https://drive.google.com/open?id=' + file2['id']
+		api.update_status("@"+text[2]+" " + cadena, int(text[1]))
 		time.sleep(body.count(b'.'))
-		url = 'https://drive.google.com/file/d/' + file2['id']
 
 
 channel.basic_qos(prefetch_count = 0)
